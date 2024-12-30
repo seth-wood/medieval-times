@@ -1,0 +1,46 @@
+Project Steps
+
+[x] Connect project to BlueSky API
+[x] Decide News API -Mediastack looks good and https://www.thenewsapi.com/
+[x] Integrate News API
+[x] Create function to get latest News API data
+[] Create function to iterate through 3 stories 
+[] Create array/dictionary for storage
+[x] Create function to take GenAI data and send it to BlueSky API asynchronously into threads, stopping at 250 characters
+[x] Create cron job to post at the same time every day
+[x] Create cron job to post at the same time every day
+
+
+
+Example ChatGPT Response API:
+{
+  id: "chatcmpl-AiuJ9FS8hBwii9VlUdVCA0B73RQq4",
+  object: "chat.completion",
+  created: 1735266243,
+  model: "gpt-3.5-turbo-0125",
+  choices: [
+    {
+      index: 0,
+      message: {
+        role: "assistant",
+        content: "Artificial mind\nLearning and evolving fast\nFuture unknown path",
+        refusal: null
+      },
+      logprobs: null,
+      finish_reason: "stop"
+    }
+  ],
+  usage: {
+    prompt_tokens: 13,
+    completion_tokens: 13,
+    total_tokens: 26,
+    prompt_tokens_details: { cached_tokens: 0, audio_tokens: 0 },
+    completion_tokens_details: {
+      reasoning_tokens: 0,
+      audio_tokens: 0,
+      accepted_prediction_tokens: 0,
+      rejected_prediction_tokens: 0
+    }
+  },
+  system_fingerprint: null
+}
