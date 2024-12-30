@@ -10,6 +10,7 @@ const rssFeedURL = "https://news.google.com/rss";
 const user = Deno.env.get("BLUESKY_USERNAME");
 const pass = Deno.env.get("BLUESKY_PASSWORD");
 const openaiKey = Deno.env.get("OPENAI_KEY");
+
 const openai = new OpenAI({ apiKey: openaiKey });
 const agent = new AtpAgent({ service: "https://bsky.social" });
 
@@ -110,8 +111,15 @@ async function getNewsHeadlines() {
 async function getGPTResponse(text: string) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: text }],
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a medieval town crier. You will take the modern text provided by the input and rewrite it with a max of 280 characters in a medieval tone. Ignore the news source citation on the input. No need to provide an introduction or opening like 'Here ye!' or 'Hark', you can jump right into the news.",
+        },
+        { role: "user", content: text },
+      ],
     });
     return response.choices[0].message.content;
   } catch (error) {
@@ -120,14 +128,13 @@ async function getGPTResponse(text: string) {
   }
 }
 
-//TODO: Connect GoogleAPI to ChatGPT to BlueSky
 async function main(): Promise<void> {
   try {
-    //TODO: Get GPT response from news headlines
-
     await getNewsHeadlines();
 
-    const hereYe = await postToBlueSky("Here is the news of the land...");
+    const hereYe = await postToBlueSky(
+      "Hark! Here today is the news of the land..."
+    );
     tidings.push({
       // TODO: Add date in medieval format
       text: "Here is the news of the land...",
@@ -135,38 +142,34 @@ async function main(): Promise<void> {
       cid: hereYe.postCID,
     });
 
-    console.log("Root Post URI:", tidings[0].uri);
-    console.log("Root Content Hash (CID):", tidings[0].cid);
-
     for (let i = 0; i < headlines.length; i++) {
       const rootURI = tidings[0].uri;
       const rootCID = tidings[0].cid;
+
       const parentURI = i === 0 ? rootURI : tidings[i].uri;
       const parentCID = i === 0 ? rootCID : tidings[i].cid;
 
-      //const gptResponse = await getGPTResponse(headlines[i].title);
-      const bskyPost = await postToBlueSky(
-        headlines[i].title,
-        parentURI,
-        parentCID,
-        tidings[0].uri,
-        tidings[0].cid
-      );
-      tidings.push({
-        text: headlines[i].title,
-        uri: bskyPost.postURI,
-        cid: bskyPost.postCID,
-      });
+      const gptResponse = await getGPTResponse(headlines[i].title);
+      if (gptResponse) {
+        const bskyPost = await postToBlueSky(
+          gptResponse,
+          parentURI,
+          parentCID,
+          tidings[0].uri,
+          tidings[0].cid
+        );
 
-      console.log(`#${i} Post URI:`, bskyPost.postURI);
-      console.log(`#${i} Content Hash (CID):`, bskyPost.postCID);
+        tidings.push({
+          text: gptResponse,
+          uri: bskyPost.postURI,
+          cid: bskyPost.postCID,
+        });
+      }
     }
 
     headlines.length = 0; // Clear headlines array
     tidings.length = 0; // Clear tidings array
     isLoggedIn = false; // Reset login status
-
-    //const postThread = await postToBlueSky(medievalResponse);
   } catch (error) {
     console.error("Error in main function:", error);
   }
@@ -176,7 +179,7 @@ main();
 
 // Deno.cron("Per minute", scheduleExpressionMinute, main);
 // const scheduleExpressionMinute = "* * * * *"; // Run once every minute for testing
-// // const scheduleExpression = "30 9 * * *"; // Run @ 9:30AM Every Day
+// const scheduleExpression = "30 12 * * *"; // Run @ 7:30AM (EST) Every Day
 // const job = new CronJob(scheduleExpressionMinute, main); // change to scheduleExpressionMinute for testing
 // job.start();
 
