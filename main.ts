@@ -1,6 +1,6 @@
 import { AtpAgent } from "npm:@atproto/api";
 import * as dotenv from "npm:dotenv";
-import { CronJob } from "npm:cron";
+//import { CronJob } from "npm:cron";
 import { OpenAI } from "npm:openai";
 import RSS from "npm:rss-to-json";
 
@@ -188,6 +188,8 @@ async function main(): Promise<void> {
 main().catch((error) => console.error(error));
 
 // const scheduleExpressionMinute = "* * * * *"; // Run once every minute for testing
-const scheduleExpression = "30 12 * * *"; // Run @ 7:30AM (EST) Every Day
-const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
-job.start();
+// const scheduleExpression = "30 12 * * *"; // Run @ 7:30AM (EST) Every Day
+// const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
+// job.start();
+
+Deno.cron("Run every morning at 7:30AM (EST)", "30 12 * * *", main);
