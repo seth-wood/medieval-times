@@ -11,6 +11,9 @@ const user = Deno.env.get("BLUESKY_USERNAME");
 const pass = Deno.env.get("BLUESKY_PASSWORD");
 const openaiKey = Deno.env.get("OPENAI_KEY");
 
+const defaultPrompt =
+  "You are a medieval town crier. You will take the modern text provided by the input and rewrite it with a max of 280 characters in a medieval tone. Ignore the news source citation on the input. No need to provide an introduction or opening like 'Here ye!' or 'Hark', you can jump right into the news.";
+
 const openai = new OpenAI({ apiKey: openaiKey });
 const agent = new AtpAgent({ service: "https://bsky.social" });
 
@@ -30,7 +33,7 @@ interface MedievalTidings {
   cid: string;
 }
 
-interface ThreadPost extends Record<string, unknown> {
+interface BlueskyPost extends Record<string, unknown> {
   $type: string;
   text: string;
   createdAt: string;
@@ -68,7 +71,8 @@ async function postToBlueSky(
   try {
     await loginToBlueSky();
 
-    const thread: ThreadPost = {
+    //TODO: Refactor this logic to be more readable and consistent with the rest of the code
+    const thread: BlueskyPost = {
       $type: "app.bsky.feed.post",
       text,
       createdAt: new Date().toISOString(),
@@ -108,15 +112,14 @@ async function getNewsHeadlines() {
   console.log(headlines);
 }
 
-async function getGPTResponse(text: string) {
+async function getGPTResponse(text: string, newPrompt?: string) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content:
-            "You are a medieval town crier. You will take the modern text provided by the input and rewrite it with a max of 280 characters in a medieval tone. Ignore the news source citation on the input. No need to provide an introduction or opening like 'Here ye!' or 'Hark', you can jump right into the news.",
+          content: newPrompt || defaultPrompt,
         },
         { role: "user", content: text },
       ],
@@ -131,15 +134,19 @@ async function getGPTResponse(text: string) {
 async function main(): Promise<void> {
   try {
     await getNewsHeadlines();
-
-    const hereYe = await postToBlueSky(
-      "Hark! Here today is the news of the land..."
+    const intro = await getGPTResponse(
+      "Let the people know you are about to announce the top news of the day."
     );
+
+    // TODO: Add date in medieval format
+
+    if (!intro) throw new Error("Failed to get crier intro from GPT");
+
+    const hearYe = await postToBlueSky(intro);
     tidings.push({
-      // TODO: Add date in medieval format
-      text: "Here is the news of the land...",
-      uri: hereYe.postURI,
-      cid: hereYe.postCID,
+      text: intro,
+      uri: hearYe.postURI,
+      cid: hearYe.postCID,
     });
 
     for (let i = 0; i < headlines.length; i++) {
@@ -148,6 +155,8 @@ async function main(): Promise<void> {
 
       const parentURI = i === 0 ? rootURI : tidings[i].uri;
       const parentCID = i === 0 ? rootCID : tidings[i].cid;
+
+      //TODO: Add google news links to the post
 
       const gptResponse = await getGPTResponse(headlines[i].title);
       if (gptResponse) {
@@ -175,12 +184,10 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+// * Run the main function (with promise handling)
+main().catch((error) => console.error(error));
 
-// Deno.cron("Per minute", scheduleExpressionMinute, main);
 // const scheduleExpressionMinute = "* * * * *"; // Run once every minute for testing
-// const scheduleExpression = "30 12 * * *"; // Run @ 7:30AM (EST) Every Day
-// const job = new CronJob(scheduleExpressionMinute, main); // change to scheduleExpressionMinute for testing
-// job.start();
-
-// https://docs.bsky.app/docs/tutorials/creating-a-post#replies-quote-posts-and-embeds
+const scheduleExpression = "30 12 * * *"; // Run @ 7:30AM (EST) Every Day
+const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
+job.start();
