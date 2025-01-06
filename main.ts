@@ -134,9 +134,14 @@ async function getGPTResponse(text: string, newPrompt?: string) {
 
 async function main(): Promise<void> {
   try {
+    const systemPrompt: string =
+      "You are a medieval crier. Respond no longer than 280 characters.";
+
     await getNewsHeadlines();
+
     const intro = await getGPTResponse(
-      "Let everyone know you are about to annouce the tidings of the day."
+      "Get everyone's attention in the town. Use a balance of modern words with old english.",
+      systemPrompt
     );
 
     // TODO: Add date in medieval format?
@@ -193,4 +198,4 @@ main().catch((error) => console.error(error));
 // const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
 // job.start();
 
-Deno.cron("everymorning", "30 12 * * *", main);
+//Deno.cron("everymorning", "30 12 * * *", main);
