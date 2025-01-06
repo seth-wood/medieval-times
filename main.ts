@@ -193,4 +193,4 @@ main().catch((error) => console.error(error));
 // const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
 // job.start();
 
-Deno.cron("EveryMorning", "30 12 * * *", main);
+Deno.cron("everymorning", "30 12 * * *", main);
