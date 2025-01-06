@@ -12,7 +12,7 @@ const pass = Deno.env.get("BLUESKY_PASSWORD");
 const openaiKey = Deno.env.get("OPENAI_KEY");
 
 const defaultPrompt =
-  "You are a medieval town crier. You will take the modern text provided by the input and rewrite it with a max of 280 characters in a medieval tone. Ignore the news source citation on the input. No need to provide an introduction or opening like 'Here ye!' or 'Hark', you can jump right into the news.";
+  "You are a medieval town crier. You will take the text provided by the input and rewrite it. Your response will be a max of 280 characters. Ignore the news source citation on the input. No need to provide an introduction or opening like 'Here ye!' or 'Hark', you can jump right into the news.";
 
 const openai = new OpenAI({ apiKey: openaiKey });
 const agent = new AtpAgent({ service: "https://bsky.social" });
@@ -72,6 +72,7 @@ async function postToBlueSky(
     await loginToBlueSky();
 
     //TODO: Refactor this logic to be more readable and consistent with the rest of the code
+    //** Can create an array to store different options */
     const thread: BlueskyPost = {
       $type: "app.bsky.feed.post",
       text,
@@ -135,10 +136,10 @@ async function main(): Promise<void> {
   try {
     await getNewsHeadlines();
     const intro = await getGPTResponse(
-      "Let the people know you are about to announce the top news of the day."
+      "Let everyone know you are about to annouce the tidings of the day."
     );
 
-    // TODO: Add date in medieval format
+    // TODO: Add date in medieval format?
 
     if (!intro) throw new Error("Failed to get crier intro from GPT");
 
@@ -192,4 +193,4 @@ main().catch((error) => console.error(error));
 // const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
 // job.start();
 
-Deno.cron("Run every morning at 7:30AM (EST)", "30 12 * * *", main);
+Deno.cron("EveryMorning", "30 12 * * *", main);
