@@ -134,13 +134,25 @@ async function getGPTResponse(text: string, newPrompt?: string) {
 
 async function main(): Promise<void> {
   try {
-    const systemPrompt: string =
-      "You are a medieval crier. Respond no longer than 280 characters.";
-
     await getNewsHeadlines();
 
+    let headlineString = "";
+
+    // Construct a formatted string from the headlines array
+    for (const headline of headlines) {
+      if (headline.title && headline.link) {
+        headlineString += `Title: ${headline.title}, Link: ${headline.link}\n`;
+      } else {
+        console.warn(`Skipping invalid headline: ${JSON.stringify(headline)}`);
+        // Important: Don't break the loop if a headline is invalid
+      }
+    }
+
+    const systemPrompt: string =
+      "You are a medieval crier. Speak mainly modernly with some old english prose. Respond no longer than 280 characters.";
+
     const intro = await getGPTResponse(
-      "Get everyone's attention in the town. Use a balance of modern words with old english.",
+      `Provide a light teaser of the news you will be annoucing based on these headlines: \n${headlineString} Don't give the story away.`,
       systemPrompt
     );
 
