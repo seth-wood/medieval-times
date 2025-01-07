@@ -66,7 +66,7 @@ async function postToBlueSky(
   parentURI?: string,
   parentCID?: string,
   rootURI?: string,
-  rootCID?: string
+  rootCID?: string,
 ) {
   try {
     await loginToBlueSky();
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
 
     const intro = await getGPTResponse(
       `Provide a light teaser of the news you will be annoucing based on these headlines: \n${headlineString} Don't give the story away.`,
-      systemPrompt
+      systemPrompt,
     );
 
     // TODO: Add date in medieval format?
@@ -167,7 +167,7 @@ async function main(): Promise<void> {
       cid: hearYe.postCID,
     });
 
-    for (let i = 0; i < headlines.length; i++) {
+    for (let i = 0; i < 3; i++) {
       const rootURI = tidings[0].uri;
       const rootCID = tidings[0].cid;
 
@@ -183,7 +183,7 @@ async function main(): Promise<void> {
           parentURI,
           parentCID,
           tidings[0].uri,
-          tidings[0].cid
+          tidings[0].cid,
         );
 
         tidings.push({
