@@ -210,4 +210,4 @@ async function main(): Promise<void> {
 // * Run the main function (with promise handling)
 main().catch((error) => console.error(error));
 
-//Deno.cron("everymorning", "30 12 * * *", main);
+Deno.cron("everymorning", "30 12 * * *", main);
