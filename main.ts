@@ -66,7 +66,7 @@ async function postToBlueSky(
   parentURI?: string,
   parentCID?: string,
   rootURI?: string,
-  rootCID?: string,
+  rootCID?: string
 ) {
   try {
     await loginToBlueSky();
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
 
     const intro = await getGPTResponse(
       `Provide a light teaser of the news you will be annoucing based on these headlines: \n${headlineString} Don't give the story away.`,
-      systemPrompt,
+      systemPrompt
     );
 
     // TODO: Add date in medieval format?
@@ -166,6 +166,9 @@ async function main(): Promise<void> {
       uri: hearYe.postURI,
       cid: hearYe.postCID,
     });
+    console.log(intro);
+    console.log(hearYe.postURI);
+    console.log(hearYe.postCID);
 
     for (let i = 0; i < 3; i++) {
       const rootURI = tidings[0].uri;
@@ -183,7 +186,7 @@ async function main(): Promise<void> {
           parentURI,
           parentCID,
           tidings[0].uri,
-          tidings[0].cid,
+          tidings[0].cid
         );
 
         tidings.push({
@@ -191,23 +194,20 @@ async function main(): Promise<void> {
           uri: bskyPost.postURI,
           cid: bskyPost.postCID,
         });
+        console.log(gptResponse);
+        console.log(bskyPost.postURI);
+        console.log(bskyPost.postCID);
       }
     }
-
-    headlines.length = 0; // Clear headlines array
-    tidings.length = 0; // Clear tidings array
-    isLoggedIn = false; // Reset login status
   } catch (error) {
     console.error("Error in main function:", error);
   }
+  headlines.length = 0; // Clear headlines array
+  tidings.length = 0; // Clear tidings array
+  isLoggedIn = false; // Reset login status
 }
 
 // * Run the main function (with promise handling)
 main().catch((error) => console.error(error));
 
-// const scheduleExpressionMinute = "* * * * *"; // Run once every minute for testing
-// const scheduleExpression = "30 12 * * *"; // Run @ 7:30AM (EST) Every Day
-// const job = new CronJob(scheduleExpression, main); // change to scheduleExpressionMinute for testing
-// job.start();
-
-Deno.cron("everymorning", "30 12 * * *", main);
+//Deno.cron("everymorning", "30 12 * * *", main);
