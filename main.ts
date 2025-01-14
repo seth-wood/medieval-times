@@ -207,7 +207,4 @@ async function main(): Promise<void> {
   isLoggedIn = false; // Reset login status
 }
 
-// * Run the main function (with promise handling)
-main().catch((error) => console.error(error));
-
 Deno.cron("everymorning", "30 12 * * *", main);
